@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Cámaras</title>
+    
+                
+                
+    <style>
+        /* Estilo general de la página */
+        body {
+            font-family: 'Tiny5', sans-serif;
+            background-color: #d87f9d;  
+            color: #98FF98;  
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            text-align: center;
+        }
+        .tiny5-regular {
+          font-family: "Tiny5", sans-serif;
+          font-weight: 400;
+          font-style: normal;
+        }
+        
+        .vt323-regular {
+  font-family: "VT323", monospace;
+  font-weight: 400;
+  font-style: normal;
+          
+        }
+        
+                
+        
+        /* Añadimos un nuevo estilo para la imagen de usuario */
+        #userImage {
+          position: absolute;
+          top: -64px;
+          max-width: 300px;
+          z-index: 10;
+          filter: opacity(0.7); /* Efecto de opacidad para simular una foto tomada */
+          object-fit: cover;
+          border: 18px solid black; /* Mantener el borde negro */
+          display: none;
+        }
+
+        /* Efecto del flash */
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            animation: flashAnimation 1.5s ease-out forwards;
+        }
+
+        @keyframes flashAnimation {
+            0% {
+                opacity: 0.9;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Contenedor del título (gif + imagen png encima) */
+        .title-container {
+            position: relative;
+            width: 100%;
+            height: 250px;  
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title-container img.gif {
+            width: 50%;  
+            height: 70%;  
+            object-fit: cover;
+            border: 18px solid black;
+        }
+
+        .title-container img.left, 
+        .title-container img.right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6%;
+            height: auto;
+            box-shadow:0 0 20px 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .title-container img.left {
+            left: 30px;  
+        }
+
+        .title-container img.right {
+            right: 30px;  
+        }
+
+        .title-container img.png {
+            position: absolute;
+            top: -64px;
+            max-width: 300px;
+            z-index: 10;
+        }
+
+        /* Estilo para el formulario */
+        #uploadForm {
+            margin-top: 30px;
+            background-color: rgba(255, 255, 255, 0.1);  
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        input[type="number"], input[type="file"], input[type="password"] {
+            font-family: 'Tiny5', sans-serif;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 2px solid #57af80;
+            background-color: #265947;
+            color: #91d4a5;
+            width: 250px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        input[type="number"]::placeholder, input[type="password"]::placeholder {
+            color: #91d4a5;
+        }
+
+        button {
+            font-family: 'Tiny5', sans-serif;
+            padding: 12px 24px;
+            margin-top: 10px;
+            background-color: #FF1A5E;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #B61A47;
+        }
+
+        /* Barra de carga personalizada */
+        #loadingBarContainer {
+            display: none;
+            width: 250px;
+            height: 30px;
+            background-color: #265947;
+            border: 2px solid #57af80;
+            border-radius: 10px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #loadingBar {
+            height: 100%;
+            width: 0;
+            background-color: #FF1A5E;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            color: white;
+            transition: width 3s ease-in-out;
+        }
+
+        /* Símbolos del juego del calamar en la barra de carga */
+        #loadingBar:before {
+            content: "□ △ ◯";
+            display: block;
+            font-size: 22px;
+            animation: wave 1.5s infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 20px;
+            justify-items: center;
+            width: 80%;
+        }
+
+        .image-grid img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        #thanksMessage {
+            display: none;
+            font-size: 24px;
+            color: #91d4a5;
+            margin-top: 20px;
+        }
+    </style>
+</head><body>
+    <div class="title-container">
+        <img src="../assets/happy.gif" alt="GIF de fondo" class="gif" id="titleGif">
+        <img src="../assets/light.png" alt="Imagen izquierda" class="left">
+        <img src="../assets/light2.png" alt="Imagen derecha" class="right">
+        <img src="../assets/camera.png" alt="Logo" class="png">
+    </div>
+
+    <div id="uploadForm">
+        <form id="imageForm">
+            <input type="number" id="playerNumber" placeholder="NUMERO DE JUGADOR" required onfocus="playAudio()">
+            <input type="password" id="playerKey" placeholder="CLAVE" required>
+            <input type="file" id="imageFile" required accept="image/*">
+            <button type="submit" id="submitButton">SUBIR</button>
+        </form>
+    </div>
+
+    <!-- Barra de carga -->
+    <div id="loadingBarContainer">
+        <div id="loadingBar"></div>
+    </div>
+
+    <div id="thanksMessage">FOTO TOMADA!</div>
+
+    <audio id="autoPlayAudio">
+        <source src="../assets/BlueDanube.mp3" type="audio/mp3">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <audio id="audioPlayer">
+        <source src="../assets/mire.mp3" type="audio/mp3">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <audio id="submitAudio">
+        <source src="../assets/sonria.mp3" type="audio/mp3">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <audio id="flashAudio">
+        <source src="../assets/flash.mp3" type="audio/mp3">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+    
+    <script>
+              // Reproduce el audio de autoPlayAudio cuando se haga clic en cualquier parte del documento
+        
+        document.body.addEventListener('click', function() {
+            var audio = document.getElementById('autoPlayAudio');
+            audio.play();  // Inicia la reproducción del audio
+        });
+
+        let submitAudioPlayed = false;
+        let audioPlayed = false;
+
+        // Función que se ejecuta al recibir el foco en el campo de entrada
+        function playAudio() {
+            var audio = document.getElementById("audioPlayer");
+            if (!audioPlayed) {
+                audio.play(); // Reproduce el audioPlayer si no ha sido reproducido aún
+                audioPlayed = true;
+            }
+        }
+    </script>
+    <script type="module">
+    
+        // Importar Supabase
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        // Configuración de Supabase
+        const supabaseUrl = 'https://gvznatjbimzveaaxwjwg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2em5hdGpiaW16dmVhYXh3andnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMjk5MjcxMiwiZXhwIjoyMDQ4NTY4NzEyfQ.RMNzo3H5yCfLBULW4d7j2BAq5q5Qqzd_kc4Ma1E3nUs';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        const claves = 
+          {"001":"8349","002":"4863","003":"3519","004":"2846","005":"7146","006":"7901","007":"4437","008":"2603","009":"4368","010":"2654","011":"7962","012":"5225","013":"6737","014":"3067","015":"5366","016":"8983","017":"2255","018":"4905","019":"0219","020":"4115","021":"6172","022":"1637","023":"4010","024":"0455","025":"0917","026":"5369","027":"1526","028":"9166","029":"7419","030":"8121","031":"8768","032":"5944","033":"1814","034":"9882","035":"9094","036":"3749","037":"5720","038":"4352","039":"6299","040":"9954","041":"2641","042":"4884","043":"7515","044":"2520","045":"8595","046":"2221","047":"2847","048":"4135","049":"6776","050":"6206","051":"0543","052":"8602","053":"9195","054":"7551","055":"4352","056":"2535","057":"4005","058":"8415","059":"5116","060":"3106","061":"0087","062":"0359","063":"6841","064":"6143","065":"0392","066":"5612","067":"5643","068":"1932","069":"6105","070":"9307","071":"2448","072":"6010","073":"5905","074":"3269","075":"3275","076":"3108","077":"9191","078":"6195","079":"0298","080":"8368","081":"5824","082":"0555","083":"4405","084":"9459","085":"1073","086":"9112","087":"6614","088":"2157","089":"1228","090":"3925","091":"2673","092":"2108","093":"5692","094":"5816","095":"4263","096":"3885","097":"6415","098":"8681","099":"6409","100":"8535","101":"wtet","102":"nuii","103":"fynn","104":"ahqh","105":"mxvf","106":"fixd","107":"qiry","108":"gvip","109":"aizt","110":"fgdh","111":"rrez","112":"rwyz","113":"yhcz","114":"cbvq","115":"axna","116":"rpqt","117":"ecmb","118":"qrzq","119":"wxnt","120":"nany","121":"mwqr","122":"vbff","123":"kjfn","124":"ujpi","125":"qkju","126":"qcvb","127":"hxpj","128":"rbeu","129":"fehf","130":"augp","131":"nbyw","132":"zhmq","133":"bdpc","134":"rbgh","135":"pwfn","136":"aytr","137":"wciu","138":"zjgk","139":"yppw","140":"zmzn","141":"becu","142":"bvjn","143":"mpaz","144":"nain","145":"hupn","146":"utck","147":"kjar","148":"dppf","149":"pbcf","150":"hwxr","151":"ddkz","152":"nyyj","153":"tuhh","154":"biut","155":"ptpy","156":"ygjk","157":"yzqd","158":"nehk","159":"dagj","160":"cvnm","161":"gyyk","162":"uwqg","163":"mmjj","164":"zqkc","165":"idzv","166":"dfnf","167":"fdyz","168":"rwue","169":"wqnf","170":"hyza","171":"braw","172":"jcbq","173":"rhqx","174":"bguk","175":"nveu","176":"uwpj","177":"ztya","178":"ewrx","179":"awkg","180":"rufq","181":"xpkp","182":"igvc","183":"djqv","184":"cmzd","185":"ihrv","186":"vqbp","187":"vrjp","188":"czkr","189":"wegv","190":"crju","191":"egjc","192":"zqgx","193":"uipc","194":"nqcw","195":"ijnx","196":"enpq","197":"jqiy","198":"zzib","199":"zpyv","200":"dmdt"
+        };
+        
+        
+    // Referencias a los elementos del DOM
+    const playerNumberInput = document.getElementById('playerNumber');
+    const playerKeyInput = document.getElementById('playerKey');
+    const imageFileInput = document.getElementById('imageFile');
+    const submitButton = document.getElementById('submitButton');
+    const loadingBarContainer = document.getElementById('loadingBarContainer');
+    const loadingBar = document.getElementById('loadingBar');
+    const thanksMessage = document.getElementById('thanksMessage');
+
+    // Función para resetear la interfaz
+    function resetForm() {
+        loadingBar.style.width = '0'; // Reinicia la barra de carga
+        loadingBarContainer.style.display = 'none'; // Oculta la barra de carga
+        submitButton.disabled = false; // Habilita el botón de enviar
+        playerNumberInput.disabled = false; // Habilita el campo del número de jugador
+        playerKeyInput.disabled = false; // Habilita el campo de la clave
+        imageFileInput.disabled = false; // Habilita el campo de archivo
+    }
+
+    // Función para deshabilitar los campos cuando se está subiendo la imagen
+    function disableForm() {
+        submitButton.disabled = true;
+        playerNumberInput.disabled = true;
+        playerKeyInput.disabled = true;
+        imageFileInput.disabled = true;
+        loadingBarContainer.style.display = 'block'; // Muestra la barra de carga
+        loadingBar.style.width = '0'; // Resetea la barra
+    }
+        
+        
+        
+  // Capturar el formulario y manejar el evento de submit
+  const form = document.getElementById('uploadForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            disableForm();
+            
+            const playerNumber = document.getElementById('playerNumber').value;
+            const playerKey = document.getElementById("playerKey").value;
+            
+            if (!/^\d{3}$/.test(playerNumber) || playerNumber < 1 || playerNumber > 300) {
+        alert("Por favor, ingresa un número de jugador válido (tres dígitos entre 001 y 300).");
+        resetForm();
+        return;
+    }
+    
+    if (!claves[playerNumber] || claves[playerNumber] !== playerKey) {
+        alert("Clave incorrecta.");
+        resetForm();
+        return;
+    }
+
+    const imageFile = document.getElementById('imageFile').files[0];
+    if (!imageFile) {
+        alert("Por favor, selecciona una imagen.");
+        resetForm()
+        return;
+    }
+    
+    
+   // Mostrar barra de carga
+                document.getElementById("loadingBarContainer").style.display = "block";
+            var loadingBar = document.getElementById("loadingBar");
+            loadingBar.style.width = "0%";
+            setTimeout(function () {
+                loadingBar.style.width = "100%";
+            }, 100);
+
+            try {
+                // Verificar si ya existe una imagen con el número de jugador
+                const { data: existingImages, error: listError } = await supabase
+                    .storage
+                    .from('BaseDeDatos')
+                    .list('players', { sortBy: { column: 'name', order: 'asc' } });
+
+                if (listError) {
+                    console.error('Error al listar imágenes:', listError);
+                    throw listError;
+                }
+
+                // Filtrar para verificar si ya existe una imagen con el número de jugador
+                const imageExists = existingImages.some(image => image.name.startsWith(`${playerNumber}_`));
+
+                if (imageExists) {
+                    alert(`Ya existe una imagen para el jugador ${playerNumber}. No puedes subir otra.`);
+                    resetForm()
+                    return;
+                }
+
+                // Si no existe una imagen con ese número, proceder a subir la nueva imagen
+                const { data, error } = await supabase
+                    .storage
+                    .from('BaseDeDatos')
+                    .upload(`players/${playerNumber}_${imageFile.name}`, imageFile);
+
+                if (error) {
+                    console.error('Error al subir la imagen:', error);
+                    throw error;
+                }
+                // Verificar que la imagen se subió correctamente
+                console.log('Imagen subida correctamente:', data);
+
+                alert('Imagen subida correctamente.');
+                // Reset form
+                const form = document.getElementById('imageForm');  // Selecciona el formulario por su ID
+                if (form) {
+                  form.reset();  // Resetea el formulario si existe
+                  } else {
+                    console.error("Formulario no encontrado");
+                  }
+            } catch (error) {
+                console.error('Error al subir la imagen:', error);
+                alert('Error al subir la imagen.');
+            }
+
+    
+    
+    var submitAudio = document.getElementById("submitAudio");
+        submitAudio.play();
+
+        // Esperar a que "sonría.mp3" termine antes de reproducir "flash.mp3"
+        submitAudio.addEventListener("ended", function () {
+            var flashAudio = document.getElementById("flashAudio");
+            flashAudio.play();
+
+            // Mostrar efecto de flash
+            var flash = document.createElement("div");
+            flash.className = "flash";
+            document.body.appendChild(flash);
+
+            // Colocar la imagen cuando la pantalla está en blanco por el flash
+            setTimeout(function () {
+                // Reemplazar el GIF por la imagen cargada
+                var gifImage = document.getElementById("titleGif");
+                gifImage.src = URL.createObjectURL(imageFile);
+                gifImage.style.objectFit = "cover"; // Asegura el ajuste de la imagen
+                gifImage.style.border = "18px solid black";
+
+                // Mostrar número del jugador
+                var playerNumberLabel = document.createElement("div");
+                playerNumberLabel.textContent = playerNumber;
+                playerNumberLabel.style.position = "absolute";
+                playerNumberLabel.style.bottom = "35px";
+                playerNumberLabel.style.width = "100%";
+                playerNumberLabel.style.textAlign = "center";
+                playerNumberLabel.style.fontFamily = "'VT323', monospace";
+                playerNumberLabel.style.fontSize = "50px";
+                playerNumberLabel.style.color = "#91FFEF";
+                playerNumberLabel.style.textShadow = "2px 2px 4px #000000";
+                playerNumberLabel.style.zIndex = "11";
+                gifImage.parentNode.appendChild(playerNumberLabel);
+
+                flash.remove(); // Eliminar el flash
+                                    // Deshabilitar todos los campos del formulario y el botón
+                    document.getElementById("loadingBarContainer").style.display = "none";
+                    document.getElementById("playerNumber").disabled = true;
+                    document.getElementById("playerKey").disabled = true;
+                    document.getElementById("imageFile").disabled = true;
+                    document.getElementById("submitButton").disabled = true;
+            }, 350); // Tiempo suficiente para que la pantalla esté completamente blanca
+    }, 300);
+});
+</script>
+</body>
+</html>
