@@ -1,0 +1,8 @@
+{
+  "builds": [
+    {
+      "src": "scripts/squidgame.html",
+      "use": "@vercel/static"
+    }
+  ]
+}
