@@ -4,5 +4,11 @@
       "src": "scripts/squidgame.html",
       "use": "@vercel/static"
     }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/scripts/squidgame.html"
+    }
   ]
 }
